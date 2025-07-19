@@ -8,15 +8,18 @@ A Node.js, Express, Mongoose, and TypeScript-powered **RESTful API** for managin
 
 -  **Books Management**
 
-   -  Add, retrieve, filter, and sort books
+   -  Add, retrieve, filter, sort, update, and delete books
+   -  Retrieve book by ID
    -  Unique ISBN enforcement
    -  Copies & availability tracking
 
 -  **Borrow Management**
 
    -  Borrow book copies
+   -  Automatic stock decrement
+   -  Prevent over-borrowing
    -  Due date handling
-   -  Quantity validation
+   -  Borrowed books summary with aggregation
 
 -  **Validation**
 
@@ -96,7 +99,6 @@ npm run dev
 
 ```bash
 npm run build
-npm start
 ```
 
 ---
@@ -105,16 +107,19 @@ npm start
 
 ### **Books**
 
-| Method | Endpoint | Description                |
-| ------ | -------- | -------------------------- |
-| POST   | `/books` | Add a new book             |
-| GET    | `/books` | Get books with filter/sort |
+| Method | Endpoint         | Description                |
+| ------ | ---------------- | -------------------------- |
+| POST   | `/books`         | Add a new book             |
+| GET    | `/books`         | Get books with filter/sort |
+| GET    | `/books/:bookID` | Get a book by ID           |
+| PUT    | `/books/:bookID` | Update a book by ID        |
+| DELETE | `/books/:bookID` | Delete a book by ID        |
 
 #### **Query Params for **``
 
 | Param    | Description                             |
 | -------- | --------------------------------------- |
-| `filter` | Filter by book title                    |
+| `filter` | Filter by genre                         |
 | `sortBy` | Field to sort by (default: `createdAt`) |
 | `sort`   | `asc` or `desc`                         |
 | `limit`  | Limit number of results (default: 10)   |
@@ -123,9 +128,10 @@ npm start
 
 ### **Borrow**
 
-| Method | Endpoint  | Description   |
-| ------ | --------- | ------------- |
-| POST   | `/borrow` | Borrow a book |
+| Method | Endpoint  | Description        |
+| ------ | --------- | ------------------ |
+| POST   | `/borrow` | Borrow a book      |
+| GET    | `/borrow` | Get borrow summary |
 
 ---
 
@@ -189,6 +195,16 @@ Content-Type: application/json
   "dueDate": "2025-08-10"
 }
 ```
+
+---
+
+### Borrow Summary
+
+```http
+GET /borrow
+```
+
+Returns total borrowed quantity per book with title & ISBN.
 
 ---
 
