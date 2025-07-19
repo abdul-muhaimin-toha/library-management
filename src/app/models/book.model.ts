@@ -1,7 +1,7 @@
-import { model, Schema } from 'mongoose';
-import { IBook } from '../interfaces/book.interface';
+import { model, Schema, Types } from 'mongoose';
+import { BookModelType, IBook } from '../interfaces/book.interface';
 
-const bookSchema = new Schema<IBook>(
+const bookSchema = new Schema<IBook, BookModelType>(
    {
       title: {
          type: String,
@@ -48,4 +48,26 @@ const bookSchema = new Schema<IBook>(
    { timestamps: true, versionKey: false }
 );
 
-export const Book = model<IBook>('Book', bookSchema);
+bookSchema.post('save', function (doc) {
+   console.log(`Book ${doc.title} has been saved/updated.`);
+});
+
+bookSchema.static(
+   'updateBookCopies',
+   async function (bookID: Types.ObjectId, quantity: number) {
+      const book = await this.findById(bookID);
+      if (!book) return null;
+
+      book.copies -= quantity;
+
+      if (book.copies <= 0) {
+         book.copies = 0;
+         book.available = false;
+      }
+
+      await book.save();
+      return book;
+   }
+);
+
+export const Book = model<IBook, BookModelType>('Book', bookSchema);

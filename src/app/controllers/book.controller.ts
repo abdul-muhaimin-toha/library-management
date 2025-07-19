@@ -10,15 +10,15 @@ bookRoutes.post('/', async (req: Request, res: Response) => {
       const validatedData = bookSchema.parse(req.body);
       const newBook: IBook = await Book.create(validatedData);
 
-      res.send({
+      res.status(200).send({
          success: true,
-         message: 'book created successfully',
+         message: 'Book created successfully',
          data: newBook,
       });
    } catch (error) {
-      res.send({
+      res.status(500).send({
          success: false,
-         message: 'Validation failed',
+         message: 'An error occurred while creating book',
          error,
       });
    }
@@ -39,24 +39,26 @@ bookRoutes.get('/', async (req: Request, res: Response) => {
       };
 
       const sortOrder = sort === 'desc' ? -1 : 1;
-      const limitValue = parseInt(limit);
+      const limitValue = parseInt(limit) || 10;
+      let books: IBook[] = [];
 
-      const query: Record<string, any> = {};
       if (filter) {
-         query.genre = filter;
+         books = await Book.find({ genre: filter })
+            .sort({ [sortBy]: sortOrder })
+            .limit(limitValue);
+      } else {
+         books = await Book.find()
+            .sort({ [sortBy]: sortOrder })
+            .limit(limitValue);
       }
 
-      const books = await Book.find(query)
-         .sort({ [sortBy]: sortOrder })
-         .limit(limitValue);
-
-      res.send({
+      res.status(200).send({
          success: true,
          message: 'Books retrieved successfully',
          data: books,
       });
    } catch (error) {
-      res.send({
+      res.status(500).send({
          success: false,
          message: 'An error occurred while retrieving books',
          error: error,
@@ -69,13 +71,20 @@ bookRoutes.get('/:bookID', async (req: Request, res: Response) => {
       const bookID = req.params.bookID;
       const book: IBook | null = await Book.findById(bookID);
 
-      res.send({
+      if (!book) {
+         res.status(404).send({
+            success: false,
+            message: 'Book not found',
+         });
+      }
+
+      res.status(200).send({
          success: true,
          message: 'Book retrieved successfully',
          data: book,
       });
    } catch (error) {
-      res.send({
+      res.status(500).send({
          success: false,
          message: 'An error occurred while retrieving book',
          error: error,
@@ -94,13 +103,20 @@ bookRoutes.patch('/:bookID', async (req: Request, res: Response) => {
          }
       );
 
-      res.send({
+      if (!book) {
+         res.status(404).send({
+            success: false,
+            message: 'Book not found',
+         });
+      }
+
+      res.status(200).send({
          success: true,
          message: 'Book updated successfully',
          data: book,
       });
    } catch (error) {
-      res.send({
+      res.status(500).send({
          success: false,
          message: 'An error occurred while updating book',
          error: error,
@@ -111,15 +127,22 @@ bookRoutes.patch('/:bookID', async (req: Request, res: Response) => {
 bookRoutes.delete('/:bookID', async (req: Request, res: Response) => {
    try {
       const bookID = req.params.bookID;
-      await Book.findByIdAndDelete(bookID);
+      const book = await Book.findByIdAndDelete(bookID);
 
-      res.send({
+      if (!book) {
+         res.status(404).send({
+            success: false,
+            message: 'Book not found',
+         });
+      }
+
+      res.status(200).send({
          success: true,
          message: 'Book deleted successfully',
          data: null,
       });
    } catch (error) {
-      res.send({
+      res.status(500).send({
          success: false,
          message: 'An error occurred while deleting book',
          error: error,
