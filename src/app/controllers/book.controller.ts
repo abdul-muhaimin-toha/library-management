@@ -2,6 +2,7 @@ import { Request, Response, Router } from 'express';
 import { Book } from '../models/book.model';
 import { IBook } from '../interfaces/book.interface';
 import { bookSchema } from '../validations/book.validation';
+import mongoose from 'mongoose';
 
 export const bookRoutes = Router();
 
@@ -69,6 +70,14 @@ bookRoutes.get('/', async (req: Request, res: Response) => {
 bookRoutes.get('/:bookID', async (req: Request, res: Response) => {
    try {
       const bookID = req.params.bookID;
+      const isValidObjectId = mongoose.Types.ObjectId.isValid;
+
+      if (!isValidObjectId(bookID)) {
+         res.status(400).send({
+            success: false,
+            message: 'Not a valid book ID',
+         });
+      }
       const book: IBook | null = await Book.findById(bookID);
 
       if (!book) {
@@ -92,9 +101,18 @@ bookRoutes.get('/:bookID', async (req: Request, res: Response) => {
    }
 });
 
-bookRoutes.patch('/:bookID', async (req: Request, res: Response) => {
+bookRoutes.put('/:bookID', async (req: Request, res: Response) => {
    try {
       const bookID = req.params.bookID;
+      const isValidObjectId = mongoose.Types.ObjectId.isValid;
+
+      if (!isValidObjectId(bookID)) {
+         res.status(400).send({
+            success: false,
+            message: 'Not a valid book ID',
+         });
+      }
+
       const book: IBook | null = await Book.findByIdAndUpdate(
          bookID,
          req.body,
@@ -127,6 +145,16 @@ bookRoutes.patch('/:bookID', async (req: Request, res: Response) => {
 bookRoutes.delete('/:bookID', async (req: Request, res: Response) => {
    try {
       const bookID = req.params.bookID;
+
+      const isValidObjectId = mongoose.Types.ObjectId.isValid;
+
+      if (!isValidObjectId(bookID)) {
+         res.status(400).send({
+            success: false,
+            message: 'Not a valid book ID',
+         });
+      }
+
       const book = await Book.findByIdAndDelete(bookID);
 
       if (!book) {
