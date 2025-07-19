@@ -10,7 +10,7 @@ app.use(express.json());
 app.use('/books', bookRoutes);
 app.use('/borrow', borrowRoutes);
 
-app.get('/health', (_req: Request, res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
    const dbState = mongoose.connection.readyState;
    const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
 
